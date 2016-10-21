@@ -10,6 +10,11 @@ This is a small ROS node that exposes OpenFace over ROS. In particular, given a 
 
 This repository expects [Interaction Lab's fork of OpenFace](https://github.com/interaction-lab/OpenFace) and [OpenCV 3](https://github.com/opencv/opencv) to be installed.
 
+Dependencies of OpenFace include:
+  * `dlib`
+  * Boost Filesystem
+  * `tbb`
+
 ## ROS Parameters
 
 ### Required
