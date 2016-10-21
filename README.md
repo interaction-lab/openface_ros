@@ -8,7 +8,7 @@ This is a small ROS node that exposes OpenFace over ROS. In particular, given a 
   * Action Units
   * Debug Visualization (optional)
 
-This repository expects interaction lab's fork of OpenFace to be installed to /usr/local and OpenCV 3.
+This repository expects (https://github.com/interaction-lab/OpenFace)[Interaction Lab's fork of OpenFace] and (https://github.com/opencv/opencv)[OpenCV 3] to be installed.
 
 ## ROS Parameters
 
