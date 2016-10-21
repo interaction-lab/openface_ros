@@ -27,7 +27,7 @@ This node requires cv_bridge *and* OpenCV 3. You must ensure that cv_bridge is a
 
 ## Messages
 
-`FaceFeatures`
+### FaceFeatures
 ```
 std_msgs/Header header
 
@@ -42,7 +42,7 @@ geometry_msgs/Point[] landmarks_2d
 openface_ros/ActionUnit[] action_units
 ```
 
-`ActionUnit`
+### ActionUnit
 ```
 string name
 float64 presence
