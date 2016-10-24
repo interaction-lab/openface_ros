@@ -29,9 +29,9 @@ Dependencies of OpenFace include:
 
 ## Installation
   * Install all dependencies (see below)
-  * Clone OpenFace, follow installation instructions, but run `sudo make install` at the end
-  * Clone & re-compile `cv_bridge` (in `vision_opencv` stack, `http://wiki.ros.org/vision_opencv`)
-  * Clone `usb_cam` ros node (`http://wiki.ros.org/usb_cam`) or other ros node of your choice for interfacing with USB camera
+  * Clone  [Interaction Lab's fork of OpenFace](https://github.com/interaction-lab/OpenFace), follow installation instructions, then `sudo make install` at the end
+  * Clone & re-compile `cv_bridge` ([in `vision_opencv` stack](http://wiki.ros.org/vision_opencv))
+  * Clone [`usb_cam` ros node](http://wiki.ros.org/usb_cam) or other ros node of your choice for interfacing with USB camera
 
 ### Dependencies
   * OpenCV 3 (If installing from source, make sure to run cmake as follows: `cmake -DBUILD_SHARED_LIBS=ON ..﻿⁠⁠⁠⁠`
