@@ -14,6 +14,7 @@ Dependencies of OpenFace include:
   * `dlib`
   * Boost Filesystem
   * `tbb`
+  * OpenCV 3
 
 ## ROS Parameters
 
@@ -26,9 +27,24 @@ Dependencies of OpenFace include:
   * `~au_model_path` - Provide an alternate AU model to OpenFace.
   * `~publish_viz` - Set to `true` to publish a debug visualization (default: `false`).
 
-## Notes
+## Installation
+  * Install all dependencies (see below)
+  * Clone OpenFace, follow installation instructions, but run `sudo make install` at the end
+  * Clone & re-compile `cv_bridge` (in `vision_opencv` stack, `http://wiki.ros.org/vision_opencv`)
+  * Clone `usb_cam` ros node (`http://wiki.ros.org/usb_cam`) or other ros node of your choice
 
-This node requires cv_bridge *and* OpenCV 3. You must ensure that cv_bridge is also linked against OpenCV 3. If you get a warning during compilation, you may have to manually clone the `vision_opencv` repository and re-build cv_bridge.
+### Dependencies
+  * OpenCV 3 (If installing from source, make sure to run cmake as follows: `cmake -DBUILD_SHARED_LIBS=ON ..﻿⁠⁠⁠⁠`
+  * dlib (You should be able to install from dpkg, if not, clone and install from source)
+
+### Running
+  * `roscore`
+  * `rosrun usb_cam usb_cam_node`
+  * `rosrun openface_ros openface_ros _image_topic:="/usb_cam/image_raw"`
+
+### Notes
+
+This node requires `cv_bridge` *and* OpenCV 3. You must ensure that `cv_bridge` is also linked against OpenCV 3. If you get a warning during compilation, you may have to manually clone the `vision_opencv` repository and re-build `cv_bridge`.
 
 ## Messages
 
