@@ -35,7 +35,7 @@ Dependencies of OpenFace include:
 
 ### Dependencies
   * OpenCV 3 (If installing from source, make sure to run cmake as follows: `cmake -DBUILD_SHARED_LIBS=ON ..﻿⁠⁠⁠⁠`
-  * dlib (You should be able to install from dpkg, if not, clone and install from source)
+  * dlib (You should be able to install from apt-get, if not, clone and install from source)
 
 ### Running
   * `roscore`
