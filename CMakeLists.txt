@@ -23,13 +23,15 @@ get_filename_component(OPENLIB_PATH ${OPENLIB_FA_INCLUDE} DIRECTORY)
 message(${OPENLIB_PATH})
 get_filename_component(OPENLIB_INCLUDE_DIR ${OPENLIB_PATH} DIRECTORY)
 message(${OPENLIB_INCLUDE_DIR})
+message(${CMAKE_C_COMPILER})
 
 find_package(dlib REQUIRED)
 
 add_message_files(FILES ActionUnit.msg FaceFeatures.msg)
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
-add_definitions(-std=c++14)
+add_definitions(-std=c++11)
+add_definitions(-g -pg)
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(
   include
@@ -43,8 +45,10 @@ add_executable(openface_ros src/openface_ros.cpp)
 add_dependencies(openface_ros ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(openface_ros
   ${catkin_LIBRARIES}
-  
+
   ${OPENFACE_LIBS}
+  lapack
+  openblas
   dlib
   ${DLIB_LIBRARIES}
   ${Boost_LIBRARIES}
