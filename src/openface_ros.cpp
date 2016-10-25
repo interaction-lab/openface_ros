@@ -73,8 +73,8 @@ namespace openface_ros
       const auto base_path = package::getPath("openface_ros");
 
       
-      pnh.param<string>("clnf_model_path", clnf_model_path_, base_path + "/" + model_params_.model_location);
-      pnh.param<string>("tri_model_path", tri_model_path_, base_path + "/model/tris_68_full.txt");
+      pnh.param<string>("clnf_model_path", clnf_model_path_, base_path + "/model/" + model_params_.model_location);
+      pnh.param<string>("tri_model_path", tri_model_path_, base_path + "/model/model/tris_68_full.txt");
       pnh.param<string>("au_model_path", au_model_path_, base_path + "/model/AU_predictors/AU_all_best.txt");
       pnh.param<bool>("publish_viz", publish_viz_, false);
 
@@ -94,8 +94,8 @@ namespace openface_ros
     {
       model_params_.track_gaze = true;
 
-      clnf_ = make_unique<LandmarkDetector::CLNF>(clnf_model_path_);
-      face_analyser_ = make_unique<FaceAnalysis::FaceAnalyser>(vector<Vec3d>(), 0.7, 112, 112, au_model_path_, tri_model_path_);
+      clnf_ = unique_ptr<LandmarkDetector::CLNF>(new LandmarkDetector::CLNF(clnf_model_path_));
+      face_analyser_ = unique_ptr<FaceAnalysis::FaceAnalyser>(new FaceAnalysis::FaceAnalyser(vector<Vec3d>(), 0.7, 112, 112, au_model_path_, tri_model_path_));
 
       ROS_INFO("OpenFace initialized!");
     }
