@@ -10,6 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   roscpp
+  tf2
+  tf2_ros
 )
 
 find_package(Boost REQUIRED COMPONENTS filesystem)
@@ -27,7 +29,7 @@ message(${CMAKE_C_COMPILER})
 
 find_package(dlib REQUIRED)
 
-add_message_files(FILES ActionUnit.msg FaceFeatures.msg)
+add_message_files(FILES ActionUnit.msg Face.msg Faces.msg)
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 add_definitions(-std=c++11)
