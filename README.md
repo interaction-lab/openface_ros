@@ -25,6 +25,7 @@ Dependencies of OpenFace include:
   * `~clnf_model_path` - Provide an alternate CLNF model to OpenFace.
   * `~tri_model_path` - Provide an alternate tri model to OpenFace.
   * `~au_model_path` - Provide an alternate AU model to OpenFace.
+   * `~haar_model_path` - Provide an alternate HAAR model to OpenFace.
   * `~publish_viz` - Set to `true` to publish a debug visualization (default: `false`).
 
 ## Installation
