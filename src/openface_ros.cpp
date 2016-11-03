@@ -234,6 +234,7 @@ namespace openface_ros
 
         Face face;
         face.header.frame_id = img->header.frame_id;
+	face.header.stamp = Time::now();
         if(model_params_.track_gaze && clnf.eye_model)
         {
           Point3f left(0, 0, -1);
@@ -263,9 +264,9 @@ namespace openface_ros
           stringstream out;
           out << "head" << i;
           transform.child_frame_id = out.str();
-          transform.transform.translation.x = face.head_pose.position.x;
-          transform.transform.translation.y = face.head_pose.position.y;
-          transform.transform.translation.z = face.head_pose.position.z;
+          transform.transform.translation.x = face.head_pose.position.x/1000;
+          transform.transform.translation.y = face.head_pose.position.y/1000;
+          transform.transform.translation.z = face.head_pose.position.z/1000;
           transform.transform.rotation = face.head_pose.orientation;
           tf_br_.sendTransform(transform);
         }
