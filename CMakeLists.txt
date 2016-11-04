@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED COMPONENTS filesystem)
 find_package(OpenCV 3 REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_library(OPENFACE_FA_LIB FaceAnalyser PATH_SUFFIXES openface)
 find_library(OPENFACE_LD_LIB LandmarkDetector PATH_SUFFIXES openface)
 set(OPENFACE_LIBS ${OPENFACE_FA_LIB} ${OPENFACE_LD_LIB})
@@ -42,6 +43,7 @@ include_directories(
   ${DLIB_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
 )
 add_executable(openface_ros src/openface_ros.cpp)
 add_dependencies(openface_ros ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

@@ -44,6 +44,8 @@
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 
+#include <Eigen/Dense>
+
 using namespace std;
 using namespace ros;
 using namespace cv;
@@ -52,7 +54,6 @@ namespace
 {
   static geometry_msgs::Quaternion toQuaternion(double pitch, double roll, double yaw)
   {
-    geometry_msgs::Quaternion q;
     double t0 = std::cos(yaw * 0.5f);
     double t1 = std::sin(yaw * 0.5f);
     double t2 = std::cos(roll * 0.5f);
@@ -60,6 +61,7 @@ namespace
     double t4 = std::cos(pitch * 0.5f);
     double t5 = std::sin(pitch * 0.5f);
 
+    geometry_msgs::Quaternion q;
     q.w = t0 * t2 * t4 + t1 * t3 * t5;
     q.x = t0 * t3 * t4 - t1 * t2 * t5;
     q.y = t0 * t2 * t5 + t1 * t3 * t4;
@@ -67,7 +69,18 @@ namespace
     return q;
   }
 
-  void NonOverlapingDetections(const vector<LandmarkDetector::CLNF *>& clnf_models, vector<Rect_<double> > &face_detections)
+  static geometry_msgs::Quaternion operator *(const geometry_msgs::Quaternion &a, const geometry_msgs::Quaternion &b)
+  {
+    geometry_msgs::Quaternion q;
+    
+    q.w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;  // 1
+    q.x = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y;  // i
+    q.y = a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x;  // j
+    q.z = a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w;  // k
+    return q;
+  }
+
+  void non_overlaping_detections(const vector<LandmarkDetector::CLNF *> &clnf_models, vector<Rect_<double>> &face_detections)
   {
     if(face_detections.empty()) return;
     
@@ -82,11 +95,41 @@ namespace
         double union_area = model_rect.area() + face_detections[detection].area() - 2 * intersection_area;
 
         // If the model is already tracking what we're detecting ignore the detection, this is determined by amount of overlap
-        if(intersection_area/union_area <= 0.5) continue;
+        if(intersection_area / union_area <= 0.5) continue;
         face_detections.erase(face_detections.begin() + detection);
       }
     }
   }
+
+  vector<ssize_t> redundant_detections(const vector<LandmarkDetector::CLNF *> &clnf_models)
+  {
+    vector<ssize_t> ret(clnf_models.size(), -1);
+    for(size_t modeli = 0; modeli < clnf_models.size(); ++modeli)
+    {
+      if(ret[modeli] >= 0) continue;
+      // See if the detections intersect
+      const Rect_<double> modeli_rect = clnf_models[modeli]->GetBoundingBox();
+
+      for(size_t modelj = 0; modelj < clnf_models.size(); ++modelj)
+      {
+        if(modeli == modelj || ret[modelj] >= 0) continue;
+        
+        const Rect_<double> modelj_rect = clnf_models[modelj]->GetBoundingBox();
+
+        double intersection_area = (modeli_rect & modelj_rect).area();
+        double union_area = modeli_rect.area() + modelj_rect.area() - 2 * intersection_area;
+
+        // If the model is already tracking what we're detecting ignore the detection, this is determined by amount of overlap
+        if(intersection_area / union_area <= 0.5) continue;
+
+        ret[modelj] = modeli;
+      }
+    }
+
+    return ret;
+  }
+
+  
 }
 
 namespace openface_ros
@@ -188,7 +231,7 @@ namespace openface_ros
           active_clnfs.push_back(&clnfs_[i]); 
         }
         
-        NonOverlapingDetections(active_clnfs, face_detections);
+        non_overlaping_detections(active_clnfs, face_detections);
         ROS_INFO("new face detections %lu", face_detections.size());
         
       }
@@ -196,7 +239,7 @@ namespace openface_ros
       vector<tbb::atomic<bool>> face_detections_used(face_detections.size(), false);
       tbb::parallel_for(0, (int)clnfs_.size(), [&](int i){
 				if(clnfs_[i].failures_in_a_row > 4)
-				{				
+				{
 					actives_[i] = false;
 					clnfs_[i].Reset();
         }
@@ -223,7 +266,25 @@ namespace openface_ros
 					LandmarkDetector::DetectLandmarksInVideo(cv_ptr->image, clnfs_[i], model_params_);
 				}
 			});
+
+      vector<LandmarkDetector::CLNF *> active_clnfs;
+      for(unsigned i = 0; i < max_faces_; ++i)
+      {
+        if(!actives_[i]) continue;
+        active_clnfs.push_back(&clnfs_[i]); 
+      }
+      
+      const auto redundancies = redundant_detections(active_clnfs);
 			
+      for(size_t i = 0; i < redundancies.size(); ++i)
+      {
+        if(redundancies[i] < 0) continue;
+
+        cout << "Detected redundant CLNF at " << i << endl;
+        actives_[i] = false;
+        clnfs_[i].Reset();
+      }
+
       Faces faces;
       for(unsigned i = 0; i < max_faces_; ++i)
       {
@@ -234,7 +295,7 @@ namespace openface_ros
 
         Face face;
         face.header.frame_id = img->header.frame_id;
-	face.header.stamp = Time::now();
+        face.header.stamp = Time::now();
         if(model_params_.track_gaze && clnf.eye_model)
         {
           Point3f left(0, 0, -1);
@@ -255,7 +316,10 @@ namespace openface_ros
         face.head_pose.position.x = head_pose[0];
         face.head_pose.position.y = head_pose[1];
         face.head_pose.position.z = head_pose[2];
-        face.head_pose.orientation = toQuaternion(head_pose[4], head_pose[3], head_pose[5]);
+        const auto head_orientation = toQuaternion(head_pose[3], head_pose[5], head_pose[4]);
+
+        face.head_pose.orientation = toQuaternion(M_PI / 2, 0, M_PI / 2);
+        face.head_pose.orientation = face.head_pose.orientation * head_orientation;
 
         // tf
         {
@@ -264,9 +328,9 @@ namespace openface_ros
           stringstream out;
           out << "head" << i;
           transform.child_frame_id = out.str();
-          transform.transform.translation.x = face.head_pose.position.x/1000;
-          transform.transform.translation.y = face.head_pose.position.y/1000;
-          transform.transform.translation.z = face.head_pose.position.z/1000;
+          transform.transform.translation.x = face.head_pose.position.x / 1000.0;
+          transform.transform.translation.y = face.head_pose.position.y / 1000.0;
+          transform.transform.translation.z = face.head_pose.position.z / 1000.0;
           transform.transform.rotation = face.head_pose.orientation;
           tf_br_.sendTransform(transform);
         }
