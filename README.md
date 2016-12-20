@@ -47,6 +47,16 @@ Dependencies of OpenFace include:
 
 This node requires `cv_bridge` *and* OpenCV 3. You must ensure that `cv_bridge` is also linked against OpenCV 3. If you get a warning during compilation, you may have to manually clone the `vision_opencv` repository and re-build `cv_bridge`.
 
+### Issues
+
+If running `openface_ros` results in a segfault or you see the following lines when running `catkin_make`:
+
+    /usr/bin/ld: warning: libopencv_imgproc.so.2.4, needed by /opt/ros/indigo/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.3.1
+    /usr/bin/ld: warning: libopencv_highgui.so.2.4, needed by /opt/ros/indigo/lib/libcv_bridge.so, may conflict with libopencv_highgui.so.3.1
+    /usr/bin/ld: warning: libopencv_calib3d.so.2.4, needed by /usr/lib/x86_64-linux-gnu/libopencv_contrib.so.2.4.8, may conflict with libopencv_calib3d.so.3.1
+
+then openface ros is linking against OpenCV2 instead of OpenCV3. To fix this: update cmake to at least 3.6.2, rebuild OpenCV3, clone vision\_opencv into the src folder of your catkin workspace, then recompile cv\_bridge. Remake your catkin workspace, and the segfault and warnings should have been resolved.
+
 ## Messages
 
 ### FaceFeatures
